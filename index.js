@@ -25,8 +25,22 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+
+    const heroicCollection = client.db("heroicPlaymatesDB").collection("categories");
+    const trendingCollection = client.db("heroicPlaymatesDB").collection('trending');
+
+    app.get('/categories', async(req, res) => {
+        const result = await heroicCollection.find().toArray();
+        res.send(result);
+    });
+
+    app.get('/trending', async( req, res ) => {
+        const result = await trendingCollection.find().toArray();
+        res.send(result);
+    });
+
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    client.connect();
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
