@@ -38,6 +38,11 @@ async function run() {
     app.get('/trending', async( req, res ) => {
         const result = await trendingCollection.find().toArray();
         res.send(result);
+    });
+
+    app.get('/allToys', async (req, res) => {
+        const result = await allToysCollection.find().limit(20).toArray();
+        res.send(result);
     })
 
     app.post('/allToys', async( req, res ) => {
