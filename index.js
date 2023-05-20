@@ -28,14 +28,21 @@ async function run() {
 
     const heroicCollection = client.db("heroicPlaymatesDB").collection("categories");
     const trendingCollection = client.db("heroicPlaymatesDB").collection('trending');
+    const allToysCollection = client.db("heroicPlaymatesDB").collection('allToys');
 
     app.get('/categories', async(req, res) => {
         const result = await heroicCollection.find().toArray();
         res.send(result);
     });
 
-    app.get('trending', async( req, res ) => {
+    app.get('/trending', async( req, res ) => {
         const result = await trendingCollection.find().toArray();
+        res.send(result);
+    })
+
+    app.post('/allToys', async( req, res ) => {
+        const newToy = req.body;
+        const result = await allToysCollection.insertOne(newToy);
         res.send(result);
     })
 
