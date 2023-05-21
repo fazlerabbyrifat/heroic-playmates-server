@@ -59,11 +59,22 @@ async function run() {
  
     app.get("/allToys/:email", async(req, res) => {
         const email = req.params.email;
-        
+        const sort = req.query.sort;
         const query = { email: email };
-        // let result;
+        let result;
+        if( sort === "asc") {
+            result = await allToysCollection.find(query).sort( { price: 1 }).toArray();
+        }
+        else if( sort === "desc" ) {
+            result = await allToysCollection.find(query).sort( { price: -1 }).toArray();
+        }
+        else {
+            result = await allToysCollection.find(query).toArray();
+        }
         
-        const result = await allToysCollection.find(query).toArray();
+        result.forEach( toy => {
+            toy.price = parseFloat(toy.price);
+        });
         res.send(result);
     })
 
