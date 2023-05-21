@@ -44,39 +44,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/allToys", async (req, res) => {
-      const { search, page } = req.query;
-      const query = search ? { name: { $regex: search, $options: "i" } } : {};
-      const limit = 20;
-      const skip = page ? (parseInt(page) - 1) * limit : 0;
-      const result = await allToysCollection
-        .find(query)
-        .skip(skip)
-        .limit(limit)
-        .toArray();
-      res.send(result);
-    });
- 
-    app.get("/allToys/:email", async(req, res) => {
-        const email = req.params.email;
-        const sort = req.query.sort;
-        const query = { email: email };
-        let result;
-        if( sort === "asc") {
-            result = await allToysCollection.find(query).sort( { price: 1 }).toArray();
-        }
-        else if( sort === "desc" ) {
-            result = await allToysCollection.find(query).sort( { price: -1 }).toArray();
-        }
-        else {
-            result = await allToysCollection.find(query).toArray();
-        }
-        
-        result.forEach( toy => {
-            toy.price = parseFloat(toy.price);
-        });
-        res.send(result);
-    })
+    
 
     app.get("/allToys/:id", async (req, res) => {
       const id = req.params.id;
@@ -85,30 +53,76 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/allToys", async (req, res) => {
+        const { search, page, email } = req.query;
+        let query = search ? { name: { $regex: search, $options: "i" } } : {};
+      
+        if (email) {
+          query.email = email;
+        }
+      
+        const sort = req.query.sort;
+        let sortQuery = {};
+      
+        if (sort === "asc") {
+          sortQuery = { price: 1 };
+        } else if (sort === "desc") {
+          sortQuery = { price: -1 };
+        }
+      
+        const limit = 20;
+        const skip = page ? (parseInt(page) - 1) * limit : 0;
+      
+        try {
+          const result = await allToysCollection
+            .find(query)
+            .skip(skip)
+            .limit(limit)
+            .sort(sortQuery)
+            .toArray();
+      
+          result.forEach((toy) => {
+            toy.price = parseFloat(toy.price);
+          });
+      
+          res.send(result);
+        } catch (error) {
+          console.error(error);
+          res.status(500).send("Error retrieving toys");
+        }
+      });
+      
+
     app.post("/allToys", async (req, res) => {
       const newToy = req.body;
       const result = await allToysCollection.insertOne(newToy);
       res.send(result);
     });
 
-    app.put("/allToys/:id", async ( req, res ) => {
-        const id = req.params.id;
-        const body = req.body;
-        const filter = { _id: new ObjectId(id) };
-        const updatedDoc = {
-            $set: {
-                title: body.title,
-                price: body.price,
-                quantity: body.quantity,
-                description: body.description,
-            },
-        };
-        const result = await allToysCollection.updateOne(filter, updatedDoc);
-        res.send(result);
-    })
+    app.put("/allToys/:id", async (req, res) => {
+      const id = req.params.id;
+      const body = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          title: body.title,
+          price: body.price,
+          quantity: body.quantity,
+          description: body.description,
+        },
+      };
+      const result = await allToysCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
+
+    app.delete("/allToys/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await allToysCollection.deleteOne(query);
+      res.send(result);
+    });
 
     // Connect the client to the server	(optional starting in v4.7)
-    client.connect();
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
