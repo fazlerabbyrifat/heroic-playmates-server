@@ -91,6 +91,22 @@ async function run() {
       res.send(result);
     });
 
+    app.put("/allToys/:id", async ( req, res ) => {
+        const id = req.params.id;
+        const body = req.body;
+        const filter = { _id: new ObjectId(id) };
+        const updatedDoc = {
+            $set: {
+                title: body.title,
+                price: body.price,
+                quantity: body.quantity,
+                description: body.description,
+            },
+        };
+        const result = await allToysCollection.updateOne(filter, updatedDoc);
+        res.send(result);
+    })
+
     // Connect the client to the server	(optional starting in v4.7)
     client.connect();
     // Send a ping to confirm a successful connection
